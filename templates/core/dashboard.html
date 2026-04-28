@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard – ReSource{% endblock %}
+
+{% block content %}
+
+<h2 class="fw-bold mb-4"><i class="bi bi-grid me-2"></i>My Dashboard</h2>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-4" id="dashTabs">
+  <li class="nav-item">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#listingsTab">
+      <i class="bi bi-boxes me-1"></i>My Listings
+      <span class="badge bg-secondary ms-1">{{ my_items.count }}</span>
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#rentalsTab">
+      <i class="bi bi-bag me-1"></i>My Rentals
+      <span class="badge bg-secondary ms-1">{{ my_rental_requests.count }}</span>
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- ===== TAB 1: MY LISTINGS ===== -->
+  <div class="tab-pane fade show active" id="listingsTab">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Items I've Listed</h5>
+      <a href="{% url 'item_create' %}" class="btn btn-dark btn-sm">
+        <i class="bi bi-plus-circle me-1"></i>List New Item
+      </a>
+    </div>
+
+    {% if my_items %}
+    <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+      {% for item in my_items %}
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <h6 class="card-title">{{ item.title }}</h6>
+              <span class="badge {% if item.available %}bg-success{% else %}bg-secondary{% endif %}">
+                {% if item.available %}Available{% else %}Unavailable{% endif %}
+              </span>
+            </div>
+            <p class="text-muted small mb-1">{{ item.category }} · ₹{{ item.daily_rate }}/day</p>
+            <p class="small text-muted">Used {{ item.usage_count }} time(s)</p>
+            <div class="d-flex gap-2">
+              <a href="{% url 'item_detail' item.pk %}" class="btn btn-sm btn-outline-dark">View</a>
+              <a href="{% url 'item_edit' item.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+              <a href="{% url 'item_delete' item.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-light text-center">
+      You haven't listed any items yet.
+      <a href="{% url 'item_create' %}">List your first item!</a>
+    </div>
+    {% endif %}
+
+    <!-- Incoming Rental Requests -->
+    <h5 class="mt-4 mb-3">Incoming Rental Requests</h5>
+    {% if incoming_requests %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Item</th><th>Renter</th><th>Dates</th><th>Cost</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rental in incoming_requests %}
+          <tr>
+            <td><a href="{% url 'item_detail' rental.item.pk %}">{{ rental.item.title }}</a></td>
+            <td>{{ rental.renter.username }}</td>
+            <td>{{ rental.start_date }} → {{ rental.end_date }}</td>
+            <td>₹{{ rental.total_cost }}</td>
+            <td>
+              <span class="status-{{ rental.status|lower }}">{{ rental.status }}</span>
+            </td>
+            <td>
+              {% if rental.status == 'Pending' %}
+                <a href="{% url 'rental_approve' rental.pk %}" class="btn btn-sm btn-success me-1">Approve</a>
+                <a href="{% url 'rental_reject' rental.pk %}" class="btn btn-sm btn-danger">Reject</a>
+              {% elif rental.status == 'Approved' %}
+                <a href="{% url 'rental_complete' rental.pk %}" class="btn btn-sm btn-primary">Mark Complete</a>
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-light text-center">No rental requests for your items yet.</div>
+    {% endif %}
+
+  </div><!-- end listingsTab -->
+
+  <!-- ===== TAB 2: MY RENTALS ===== -->
+  <div class="tab-pane fade" id="rentalsTab">
+    <h5 class="mb-3">Items I've Requested to Rent</h5>
+
+    {% if my_rental_requests %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Item</th><th>Owner</th><th>Dates</th><th>Total Cost</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rental in my_rental_requests %}
+          <tr>
+            <td><a href="{% url 'item_detail' rental.item.pk %}">{{ rental.item.title }}</a></td>
+            <td>{{ rental.item.owner.username }}</td>
+            <td>{{ rental.start_date }} → {{ rental.end_date }}</td>
+            <td>₹{{ rental.total_cost }}</td>
+            <td>
+              <span class="status-{{ rental.status|lower }}">{{ rental.status }}</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-light text-center">
+      You haven't requested any rentals yet.
+      <a href="{% url 'home' %}">Browse items to rent!</a>
+    </div>
+    {% endif %}
+
+  </div><!-- end rentalsTab -->
+
+</div><!-- end tab-content -->
+
+{% endblock %}
