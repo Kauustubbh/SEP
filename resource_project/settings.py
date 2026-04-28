@@ -18,7 +18,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-insecure-key-for-dev')
 # DEBUG should be False in production
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 # Add your Render URL here once you have it
-ALLOWED_HOSTS = ['resource-p2p.onrender.com', '127.0.0.1', 'localhost']
+# ALLOWED_HOSTS = ['resource-p2p.onrender.com', '127.0.0.1', 'localhost']
+
+WHITENOISE_MANIFEST_STRICT = False
 
 INSTALLED_APPS = [
     'django.contrib.admin',
